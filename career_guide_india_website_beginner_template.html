@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareerGuide India - AI Chatbot Dashboard</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+margin:0;
+font-family:Arial, sans-serif;
+background:#0f172a;
+color:#e2e8f0;
+}
+
+header{
+background:#020617;
+padding:15px;
+text-align:center;
+font-size:22px;
+border-bottom:1px solid #1e293b;
+}
+
+.layout{
+display:flex;
+height:100vh;
+}
+
+.sidebar{
+width:240px;
+background:#020617;
+padding:15px;
+border-right:1px solid #1e293b;
+}
+
+.sidebar button{
+width:100%;
+padding:10px;
+margin-bottom:10px;
+background:#1e293b;
+border:none;
+color:white;
+border-radius:6px;
+cursor:pointer;
+}
+
+.sidebar button:hover{
+background:#2563eb;
+}
+
+.main{
+flex:1;
+padding:20px;
+display:flex;
+flex-direction:column;
+}
+
+.card{
+background:#020617;
+padding:15px;
+border-radius:10px;
+border:1px solid #1e293b;
+margin-bottom:15px;
+}
+
+.hidden{display:none}
+
+.chatbox{
+flex:1;
+overflow-y:auto;
+padding:10px;
+border:1px solid #1e293b;
+border-radius:10px;
+margin-bottom:10px;
+height:400px;
+}
+
+.message{
+padding:10px;
+margin:5px 0;
+border-radius:8px;
+max-width:70%;
+}
+
+.user{
+background:#2563eb;
+align-self:flex-end;
+}
+
+.ai{
+background:#1e293b;
+}
+
+.inputArea{
+display:flex;
+gap:10px;
+}
+
+input{
+flex:1;
+padding:10px;
+border-radius:6px;
+border:1px solid #1e293b;
+background:#020617;
+color:white;
+}
+
+button.send{
+padding:10px 20px;
+border:none;
+border-radius:6px;
+background:#2563eb;
+color:white;
+cursor:pointer;
+}
+
+button.send:hover{
+background:#1d4ed8;
+}
+
+.statGrid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+gap:10px;
+}
+
+.stat{
+background:#020617;
+padding:10px;
+border-radius:8px;
+border:1px solid #1e293b;
+text-align:center;
+}
+
+</style>
+</head>
+<body>
+
+<header>
+CareerGuide India - AI Assistant Dashboard
+</header>
+
+<div class="layout">
+
+<div class="sidebar">
+<button onclick="showSection('dashboard')">Dashboard</button>
+<button onclick="showSection('chatbot')">AI Chatbot</button>
+<button onclick="showSection('career')">Career AI</button>
+<button onclick="logout()">Logout</button>
+</div>
+
+<div class="main">
+
+<!-- Login -->
+<div id="login" class="card">
+<h3>Login</h3>
+<input type="text" id="nameInput" placeholder="Enter your name">
+<button class="send" onclick="login()">Login</button>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboard" class="hidden">
+
+<div class="statGrid">
+
+<div class="stat">
+<h3 id="userDisplay">User</h3>
+<p>Active</p>
+</div>
+
+<div class="stat">
+<h3>AI</h3>
+<p>Online</p>
+</div>
+
+<div class="stat">
+<h3>Skills</h3>
+<p>Available</p>
+</div>
+
+<div class="stat">
+<h3>Career</h3>
+<p>Ready</p>
+</div>
+
+</div>
+
+</div>
+
+<!-- Chatbot -->
+<div id="chatbot" class="card hidden">
+
+<h3>AI Career Assistant</h3>
+
+<div class="chatbox" id="chatbox"></div>
+
+<div class="inputArea">
+<input type="text" id="userInput" placeholder="Ask about career, skills, business...">
+<button class="send" onclick="sendMessage()">Send</button>
+</div>
+
+</div>
+
+<!-- Career -->
+<div id="career" class="card hidden">
+<h3>Quick Career Suggestion</h3>
+<select id="interest">
+<option value="">Select interest</option>
+<option value="tech">Technology</option>
+<option value="business">Business</option>
+<option value="design">Design</option>
+</select>
+<button class="send" onclick="careerSuggest()">Get Suggestion</button>
+<div id="careerResult"></div>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+function login(){
+var name=document.getElementById("nameInput").value;
+if(!name)return alert("Enter name");
+localStorage.setItem("user",name);
+init();
+}
+
+function logout(){
+localStorage.removeItem("user");
+location.reload();
+}
+
+function init(){
+var name=localStorage.getItem("user");
+if(name){
+
+document.getElementById("login").style.display="none";
+document.getElementById("dashboard").classList.remove("hidden");
+document.getElementById("userDisplay").innerText=name;
+
+showSection("dashboard");
+}
+}
+
+function showSection(id){
+var sections=["dashboard","chatbot","career"];
+sections.forEach(sec=>{
+var el=document.getElementById(sec);
+if(el)el.classList.add("hidden");
+});
+
+document.getElementById(id).classList.remove("hidden");
+}
+
+function sendMessage(){
+var input=document.getElementById("userInput");
+var text=input.value;
+if(!text)return;
+
+addMessage(text,"user");
+
+var reply=AIResponse(text);
+
+setTimeout(()=>addMessage(reply,"ai"),500);
+
+input.value="";
+}
+
+function addMessage(text,type){
+var box=document.getElementById("chatbox");
+var msg=document.createElement("div");
+msg.className="message "+type;
+msg.innerText=text;
+box.appendChild(msg);
+box.scrollTop=box.scrollHeight;
+}
+
+function AIResponse(input){
+input=input.toLowerCase();
+
+if(input.includes("career"))
+return "Best careers: AI Engineer, Web Developer, Digital Marketer.";
+
+if(input.includes("skill"))
+return "Learn: Coding, AI tools, Video Editing, Graphic Design.";
+
+if(input.includes("business"))
+return "Start: Freelancing, YouTube, Digital Agency.";
+
+if(input.includes("job"))
+return "Focus on high-demand skills like web development and AI.";
+
+return "I can help with career, skills, jobs, and business ideas.";
+}
+
+function careerSuggest(){
+var interest=document.getElementById("interest").value;
+var result=document.getElementById("careerResult");
+
+var data={
+tech:"AI Engineer, App Developer",
+business:"Entrepreneur, Marketer",
+design:"UI/UX Designer"
+};
+
+result.innerText=data[interest]||"Select interest";
+}
+
+window.onload=init;
+
+</script>
+
+</body>
+</html>
